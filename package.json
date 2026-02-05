@@ -1,11 +1,11 @@
 {
-  "name": "nts-bizinfo-mcp",
-  "version": "1.0.0",
-  "description": "국세청 사업자등록정보 진위확인 및 상태조회 MCP 서버",
+  "name": "korea-opendata-mcp",
+  "version": "1.1.0",
+  "description": "한국 공공데이터 MCP 서버 - 국세청 사업자등록정보 조회, 한국천문연구원 특일 정보 조회",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
-    "nts-bizinfo-mcp": "dist/index.js"
+    "korea-opendata-mcp": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -18,7 +18,11 @@
     "사업자등록",
     "진위확인",
     "상태조회",
-    "공공데이터"
+    "공공데이터",
+    "한국천문연구원",
+    "공휴일",
+    "특일",
+    "24절기"
   ],
   "license": "MIT",
   "dependencies": {
