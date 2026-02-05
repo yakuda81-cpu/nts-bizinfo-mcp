@@ -1,0 +1,31 @@
+{
+  "name": "nts-bizinfo-mcp",
+  "version": "1.0.0",
+  "description": "국세청 사업자등록정보 진위확인 및 상태조회 MCP 서버",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "nts-bizinfo-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "mcp",
+    "국세청",
+    "사업자등록",
+    "진위확인",
+    "상태조회",
+    "공공데이터"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  }
+}
