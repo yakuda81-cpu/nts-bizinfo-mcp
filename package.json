@@ -7,13 +7,23 @@
   "bin": {
     "korea-opendata-mcp": "dist/index.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
+    "prepublishOnly": "npm run build",
     "start": "node dist/index.js",
     "dev": "tsc --watch"
   },
   "keywords": [
     "mcp",
+    "model-context-protocol",
+    "korea",
+    "opendata",
+    "nts",
+    "business-registration",
+    "holidays",
     "국세청",
     "사업자등록",
     "진위확인",
@@ -24,6 +34,17 @@
     "특일",
     "24절기"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yakuda81-cpu/nts-bizinfo-mcp.git"
+  },
+  "homepage": "https://github.com/yakuda81-cpu/nts-bizinfo-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/yakuda81-cpu/nts-bizinfo-mcp/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0"
