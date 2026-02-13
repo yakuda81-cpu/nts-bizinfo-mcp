@@ -230,6 +230,12 @@ src/
 ### "API가 XML 응답을 반환했습니다"
 - 일시적인 API 서버 오류. 잠시 후 다시 시도
 
+## Roadmap
+
+- [ ] npm 레지스트리 배포 (`npm publish`)
+- [ ] GitHub Actions CI/CD 구성
+- [ ] 단위 테스트 추가
+
 ## 라이선스
 
 MIT License
