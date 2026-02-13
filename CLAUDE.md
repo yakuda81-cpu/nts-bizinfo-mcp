@@ -75,5 +75,4 @@ src/types.ts          (leaf node - no imports from src/)
 
 ## Reference Docs
 
-- `docs/01-plan/features/code-review.plan.md` - 코드 검토 계획
-- `docs/02-design/features/code-review.design.md` - 상세 설계
+- `docs/archive/2026-02/code-review/` - PDCA 아카이브 (Plan, Design, Analysis, Report)

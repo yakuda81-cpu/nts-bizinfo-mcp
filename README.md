@@ -1,14 +1,14 @@
 # Korea OpenData MCP Server
 
-한국 공공데이터포털 API를 Claude Desktop, ChatGPT 등에서 사용할 수 있는 MCP(Model Context Protocol) 서버입니다.
+한국 공공데이터포털 API를 Claude Desktop, Cursor, Windsurf 등 MCP 지원 클라이언트에서 사용할 수 있는 MCP(Model Context Protocol) 서버입니다.
 
 ## 제공 기능
 
 ### 국세청 사업자등록정보 API
-- **사업자등록 상태조회**: 사업자등록번호로 영업상태(계속/휴업/폐업), 과세유형 조회
-- **사업자등록 진위확인**: 사업자등록번호, 개업일자, 대표자명 등으로 진위여부 확인
+- **사업자등록 상태조회** (`check_business_status`): 사업자등록번호로 영업상태(계속/휴업/폐업), 과세유형 조회 (최대 100건)
+- **사업자등록 진위확인** (`validate_business_registration`): 사업자등록번호, 개업일자, 대표자명 등으로 진위여부 확인 (최대 100건)
 
-### 한국천문연구원 특일 정보 API
+### 한국천문연구원 특일 정보 API (`get_korean_holidays`)
 - **공휴일 조회**: 대체공휴일 포함 법정 공휴일 정보
 - **국경일 조회**: 3.1절, 광복절, 개천절, 한글날 등
 - **기념일 조회**: 각종 기념일 정보
@@ -48,36 +48,61 @@ npm install -g korea-opendata-mcp
 
 ### 방법 2: 소스에서 빌드
 ```bash
-git clone https://github.com/your-repo/korea-opendata-mcp.git
-cd korea-opendata-mcp
+git clone https://github.com/yakuda81-cpu/nts-bizinfo-mcp.git
+cd nts-bizinfo-mcp
 npm install
 npm run build
 ```
 
-## Claude Desktop 연결
+## MCP 클라이언트 연결
+
+### Claude Desktop
 
 `claude_desktop_config.json` 파일을 수정합니다:
 
-### Windows
-경로: `%APPDATA%\Claude\claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 
-### macOS
-경로: `~/Library/Application Support/Claude/claude_desktop_config.json`
-
-### 설정 내용
+#### npm 글로벌 설치 시
 
 ```json
 {
   "mcpServers": {
     "korea-opendata": {
-      "command": "node",
-      "args": ["C:/Users/사용자명/korea-opendata-mcp/dist/index.js"],
+      "command": "korea-opendata-mcp",
       "env": {
         "DATA_GO_KR_API_KEY": "여기에_본인의_API_인증키_입력"
       }
     }
   }
 }
+```
+
+#### 소스에서 빌드 시
+
+```json
+{
+  "mcpServers": {
+    "korea-opendata": {
+      "command": "node",
+      "args": ["C:/Users/사용자명/nts-bizinfo-mcp/dist/index.js"],
+      "env": {
+        "DATA_GO_KR_API_KEY": "여기에_본인의_API_인증키_입력"
+      }
+    }
+  }
+}
+```
+
+### Claude Code
+
+```bash
+claude mcp add korea-opendata -- node /path/to/nts-bizinfo-mcp/dist/index.js
+```
+
+환경변수는 `.env` 파일 또는 셸 환경에서 설정:
+```bash
+export DATA_GO_KR_API_KEY="여기에_본인의_API_인증키_입력"
 ```
 
 > **주의**: `DATA_GO_KR_API_KEY`에 공공데이터포털에서 발급받은 **일반 인증키 (Decoding)** 를 입력하세요.
@@ -171,21 +196,39 @@ Claude Desktop에서 다음과 같이 사용할 수 있습니다:
 ### 한국천문연구원 특일 정보 API
 - 1일 최대 10,000건
 
+## 프로젝트 구조
+
+```
+src/
+├── types.ts        # 상수, 타입, 인터페이스, 환경변수 검증
+├── validation.ts   # MCP 도구 입력 검증
+├── nts-api.ts      # 국세청 API 호출 + 결과 포맷팅
+├── kasi-api.ts     # 천문연구원 API 호출 + 결과 포맷팅
+└── index.ts        # MCP 서버 설정, 도구 핸들러
+```
+
+의존성 방향: `index` -> `validation` / `nts-api` / `kasi-api` -> `types` (단방향, 순환 참조 없음)
+
+## 보안
+
+- **SSRF 방어**: 모든 fetch 요청에 `redirect: "error"` 적용
+- **타임아웃**: `AbortController` 기반 30초 타임아웃
+- **에러 은닉**: 내부 에러 상세는 stderr 로깅, 사용자에게는 일반 메시지 반환
+- **입력 검증**: 사업자등록번호 `/^\d{10}$/` 정규식, year/month/monthCount 범위 검증
+
 ## 트러블슈팅
 
-### "DATA_GO_KR_API_KEY 환경변수가 설정되지 않았습니다" 오류
-- Claude Desktop 설정의 `env` 섹션에 API 키가 올바르게 입력되었는지 확인
-- API 키에 특수문자가 있다면 따옴표로 감싸기
+### "DATA_GO_KR_API_KEY 환경변수가 설정되지 않았습니다"
+- MCP 클라이언트 설정의 `env` 섹션에 API 키가 올바르게 입력되었는지 확인
+- `NTS_API_KEY`도 하위 호환으로 지원됨
 
-### "API 요청 실패: 401" 오류
+### "국세청 API 요청에 실패했습니다" / "천문연구원 API 요청에 실패했습니다"
 - API 키가 올바른지 확인 (Decoding 키 사용)
 - 공공데이터포털에서 해당 서비스 활용신청이 완료되었는지 확인
+- 일일 호출 한도 초과 시 다음 날 다시 시도
 
-### "API 요청 실패: 429" 오류
-- 일일 호출 한도 초과. 다음 날 다시 시도
-
-### "API가 XML 응답을 반환했습니다" 오류
-- 일시적인 API 서버 오류일 수 있음. 잠시 후 다시 시도
+### "API가 XML 응답을 반환했습니다"
+- 일시적인 API 서버 오류. 잠시 후 다시 시도
 
 ## 라이선스
 
@@ -195,4 +238,4 @@ MIT License
 
 - [공공데이터포털 - 국세청_사업자등록정보 진위확인 및 상태조회 서비스](https://www.data.go.kr/tcs/dss/selectApiDataDetailView.do?publicDataPk=15081808)
 - [공공데이터포털 - 한국천문연구원_특일 정보](https://www.data.go.kr/tcs/dss/selectApiDataDetailView.do?publicDataPk=15012690)
-- [Model Context Protocol (MCP) 문서](https://modelcontextprotocol.io/)
+- [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
